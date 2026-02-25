@@ -38,15 +38,16 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
 }
 
 # ============================================================
-# Lambda Function - ZIP deployment
+# Lambda Function - ZIP deployment (pre-built bootstrap binary)
 # ============================================================
 resource "aws_lambda_function" "ai_lambda_zip" {
   count = var.deploy_method == "zip" ? 1 : 0
 
   function_name = var.project_name
   role          = aws_iam_role.lambda_role.arn
-  handler       = "src/index.handler"
-  runtime       = "nodejs20.x"
+  handler       = "bootstrap"
+  runtime       = "provided.al2023"
+  architectures = ["x86_64"]
   memory_size   = var.lambda_memory_size
   timeout       = var.lambda_timeout
 
@@ -73,6 +74,7 @@ resource "aws_lambda_function" "ai_lambda_docker" {
   role          = aws_iam_role.lambda_role.arn
   package_type  = "Image"
   image_uri     = var.ecr_image_uri
+  architectures = ["x86_64"]
   memory_size   = var.lambda_memory_size
   timeout       = var.lambda_timeout
 

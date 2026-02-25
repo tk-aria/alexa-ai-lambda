@@ -1,13 +1,25 @@
-FROM public.ecr.aws/lambda/nodejs:20
+# ============================================================
+# Stage 1: Build the Rust binary
+# ============================================================
+FROM rust:1.83-bookworm AS builder
 
-# Copy package files
-COPY package.json package-lock.json* ./
+WORKDIR /build
 
-# Install production dependencies
-RUN npm install --production
+# Cache dependencies - copy manifests first
+COPY Cargo.toml Cargo.lock* ./
+RUN mkdir src && echo 'fn main() {}' > src/main.rs && \
+    cargo build --release 2>/dev/null || true && \
+    rm -rf src
 
-# Copy source code
+# Build actual source
 COPY src/ ./src/
+RUN cargo build --release --bin bootstrap
 
-# Set handler
-CMD ["src/index.handler"]
+# ============================================================
+# Stage 2: Lambda runtime image
+# ============================================================
+FROM public.ecr.aws/lambda/provided:al2023
+
+COPY --from=builder /build/target/release/bootstrap ${LAMBDA_RUNTIME_DIR}/bootstrap
+
+CMD ["bootstrap"]

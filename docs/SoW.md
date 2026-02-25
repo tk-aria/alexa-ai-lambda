@@ -5,7 +5,8 @@
 | 項目 | 内容 |
 |------|------|
 | プロジェクト名 | Alexa AI Lambda |
-| バージョン | 1.0 |
+| バージョン | 2.0 |
+| ランタイム | Rust (provided.al2023) |
 | 作成日 | 2026-02-25 |
 | ステータス | 実装完了 / デプロイ待ち |
 
@@ -13,7 +14,7 @@
 
 ## 1. プロジェクト概要
 
-AWS Lambda 上で動作する AI 会話サービス。HTTP エンドポイント経由のテキストベース会話と、Amazon Alexa 経由の音声ベース会話の両方に対応する。OpenAI Chat Completion API 形式および Anthropic Messages API 形式の両方をサポートし、バックエンドの AI プロバイダを透過的に利用可能にする。
+AWS Lambda 上で動作する AI 会話サービス。Rust で実装され、`provided.al2023` カスタムランタイムで動作する。HTTP エンドポイント経由のテキストベース会話と、Amazon Alexa 経由の音声ベース会話の両方に対応する。OpenAI Chat Completion API 形式および Anthropic Messages API 形式の両方をサポートし、バックエンドの AI プロバイダを透過的に利用可能にする。
 
 ---
 
@@ -63,7 +64,7 @@ AWS Lambda 上で動作する AI 会話サービス。HTTP エンドポイント
           ▼
 ┌─────────────────────┐
 │   AWS Lambda         │
-│   (Node.js 20.x)     │
+│   (Rust / al2023)     │
 │                       │
 │  ┌─────────────────┐ │
 │  │   index.js       │ │  ← リクエストルーティング
@@ -87,15 +88,16 @@ AWS Lambda 上で動作する AI 会話サービス。HTTP エンドポイント
 
 | コンポーネント | ファイル | 役割 |
 |---------------|---------|------|
-| Router | `src/index.js` | リクエスト種別 (Alexa/AI Chat) を判定しハンドラに振り分け |
-| AI Handler | `src/ai-handler.js` | OpenAI/Anthropic 形式の処理、フォーマット変換、バックエンド呼び出し |
-| Alexa Handler | `src/alexa-handler.js` | Alexa リクエスト処理、会話履歴管理、音声レスポンス生成 |
+| Router | `src/main.rs` | リクエスト種別 (Alexa/AI Chat) を判定しハンドラに振り分け |
+| AI Handler | `src/ai_handler.rs` | OpenAI/Anthropic 形式の処理、フォーマット変換、バックエンド呼び出し |
+| Alexa Handler | `src/alexa_handler.rs` | Alexa リクエスト処理、会話履歴管理、音声レスポンス生成 |
+| Models | `src/models.rs` | リクエスト/レスポンスの型定義 |
 
 ### 3.3 インフラストラクチャ
 
 | リソース | 種別 | 説明 |
 |----------|------|------|
-| Lambda Function | `aws_lambda_function` | メイン関数 (256MB, 30秒タイムアウト) |
+| Lambda Function | `aws_lambda_function` | Rust バイナリ (provided.al2023, 256MB, 30秒タイムアウト) |
 | Function URL | `aws_lambda_function_url` | HTTPS エンドポイント (認証なし, CORS 有効) |
 | IAM Role | `aws_iam_role` | Lambda 基本実行ロール |
 | CloudWatch Logs | `aws_cloudwatch_log_group` | ログ保持 14日間 |
@@ -229,29 +231,30 @@ POST / (Alexa request body)
 
 - AWS CLI 設定済み (認証情報)
 - Terraform >= 1.0
-- Node.js >= 18 (ZIP デプロイ時)
-- Docker (Docker デプロイ時)
+- Rust 1.83+ (ローカルビルド) または Docker (推奨)
+- Docker
 
-### 6.2 ZIP デプロイ
+### 6.2 ビルド
 
 ```bash
-# 1. 設定ファイル作成
-cp terraform/terraform.tfvars.example terraform/terraform.tfvars
-# terraform.tfvars を編集し API キーを設定
-
-# 2. デプロイ
-npm run deploy:zip
+# Docker でビルド (推奨)
+bash scripts/build.sh
 ```
 
-### 6.3 Docker デプロイ
+### 6.3 ZIP デプロイ
 
 ```bash
-# 1. 設定ファイル作成
+cp terraform/terraform.tfvars.example terraform/terraform.tfvars
+# terraform.tfvars を編集し API キーを設定
+DEPLOY_METHOD=zip bash scripts/deploy.sh
+```
+
+### 6.4 Docker デプロイ
+
+```bash
 cp terraform/terraform.tfvars.example terraform/terraform.tfvars
 # terraform.tfvars を編集 (deploy_method = "docker", ecr_image_uri を設定)
-
-# 2. デプロイ
-npm run deploy:docker
+DEPLOY_METHOD=docker bash scripts/deploy.sh
 ```
 
 ---

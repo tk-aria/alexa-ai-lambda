@@ -2,18 +2,21 @@
 
 ## Alexa AI Lambda - 機能一覧・進捗管理
 
+**Runtime: Rust** (lambda_http + reqwest + serde)
+
 ---
 
 ## Phase 1: コア機能
 
-### 1.1 Lambda 関数本体
+### 1.1 Lambda 関数本体 (`src/main.rs`)
 
-- [x] リクエストルーティング (`src/index.js`)
-- [x] リクエストボディのパース (JSON / Base64)
+- [x] リクエストルーティング
+- [x] リクエストボディのパース (JSON)
 - [x] Alexa リクエスト自動検出
-- [x] エラーハンドリング (500 レスポンス)
+- [x] エラーハンドリング
+- [x] 構造化ログ (tracing + JSON)
 
-### 1.2 AI チャット API (`src/ai-handler.js`)
+### 1.2 AI チャット API (`src/ai_handler.rs`)
 
 - [x] OpenAI Chat Completion 形式 (`POST /v1/chat/completions`)
 - [x] Anthropic Messages 形式 (`POST /v1/messages`)
@@ -26,7 +29,13 @@
 - [x] 不正メソッド拒否 (405)
 - [x] バリデーション (messages 必須チェック等)
 
-### 1.3 Alexa スキル対応 (`src/alexa-handler.js`)
+### 1.3 型定義 (`src/models.rs`)
+
+- [x] OpenAI リクエスト/レスポンス型
+- [x] Anthropic リクエスト/レスポンス型
+- [x] API ペイロード型 (送信用)
+
+### 1.4 Alexa スキル対応 (`src/alexa_handler.rs`)
 
 - [x] LaunchRequest ハンドリング (起動メッセージ)
 - [x] ChatIntent - ユーザー発話をAIに送信
@@ -40,10 +49,10 @@
 - [x] 音声用システムプロンプト (簡潔な応答指示)
 - [x] 日本語 / 英語レスポンス対応
 
-### 1.4 Terraform インフラ構成
+### 1.5 Terraform インフラ構成
 
-- [x] Lambda Function (ZIP デプロイ) 定義
-- [x] Lambda Function (Docker デプロイ) 定義
+- [x] Lambda Function (ZIP デプロイ / `provided.al2023`)
+- [x] Lambda Function (Docker デプロイ)
 - [x] Lambda Function URL (HTTP エンドポイント)
 - [x] IAM Role / Policy 定義
 - [x] CloudWatch Log Group 定義
@@ -53,19 +62,13 @@
 - [x] 出力定義 (`outputs.tf`)
 - [x] `terraform.tfvars.example` サンプル設定
 
-### 1.5 デプロイ・パッケージング
+### 1.6 デプロイ・パッケージング
 
+- [x] Docker マルチステージビルド (`docker/Dockerfile`)
+- [x] Docker ビルドスクリプト (`scripts/build.sh`)
 - [x] ZIP パッケージングスクリプト (`scripts/package-zip.sh`)
-- [x] ZIP パッケージング Node.js 版 (`scripts/package-zip-node.js`)
-- [x] Docker ビルド・プッシュスクリプト (`scripts/package-docker.sh`)
-- [x] Dockerfile (`docker/Dockerfile`)
+- [x] Docker ビルド・ECR プッシュスクリプト (`scripts/package-docker.sh`)
 - [x] 統合デプロイスクリプト (`scripts/deploy.sh`)
-- [x] `npm run deploy:zip` / `npm run deploy:docker` コマンド
-
-### 1.6 テスト
-
-- [x] ローカルテストスイート (`scripts/test-local.js`) - 8/8 合格
-- [x] エンドポイントテストスクリプト (`scripts/test-endpoint.js`)
 
 ### 1.7 ドキュメント
 
@@ -79,7 +82,7 @@
 - [ ] `terraform.tfvars` の作成 (API キー設定)
 - [ ] `terraform apply` による AWS デプロイ
 - [ ] Lambda Function URL の取得・動作確認
-- [ ] エンドポイントテスト (`test-endpoint.js`) の実行・全パス
+- [ ] エンドポイントテスト実行・全パス
 
 ---
 
@@ -118,13 +121,13 @@
 - [ ] エラー率・レイテンシーアラート設定
 - [ ] コストアラート設定 (AWS Budgets)
 - [ ] 使用量メトリクス収集・可視化
-- [ ] ログの構造化 (JSON ログフォーマット)
+- [x] ログの構造化 (JSON ログフォーマット) — tracing-subscriber json
 
 ---
 
 ## Phase 6: CI/CD
 
-- [ ] GitHub Actions ワークフロー (テスト)
+- [ ] GitHub Actions ワークフロー (テスト / cargo check)
 - [ ] GitHub Actions ワークフロー (ZIP デプロイ)
 - [ ] GitHub Actions ワークフロー (Docker デプロイ)
 - [ ] ブランチ保護ルール・PR 必須設定

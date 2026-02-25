@@ -1,6 +1,5 @@
-node_modules/
+target/
 dist/
-.build/
 .terraform/
 .terraform.lock.hcl
 *.tfstate
