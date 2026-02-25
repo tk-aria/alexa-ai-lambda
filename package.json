@@ -1,0 +1,22 @@
+{
+  "name": "alexa-ai-lambda",
+  "version": "1.0.0",
+  "description": "AI conversation Lambda supporting OpenAI & Anthropic APIs with Alexa integration",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "npm install --production",
+    "package:zip": "bash scripts/package-zip.sh",
+    "package:docker": "bash scripts/package-docker.sh",
+    "deploy": "bash scripts/deploy.sh",
+    "deploy:zip": "DEPLOY_METHOD=zip bash scripts/deploy.sh",
+    "deploy:docker": "DEPLOY_METHOD=docker bash scripts/deploy.sh",
+    "test": "node scripts/test-endpoint.js"
+  },
+  "dependencies": {
+    "ask-sdk-core": "^2.14.0",
+    "ask-sdk-model": "^1.86.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

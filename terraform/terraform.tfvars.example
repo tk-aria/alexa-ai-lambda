@@ -1,0 +1,19 @@
+# Copy this file to terraform.tfvars and fill in the values
+
+aws_region      = "ap-northeast-1"
+project_name    = "alexa-ai-lambda"
+deploy_method   = "zip"  # "zip" or "docker"
+
+# API Keys (at least one required)
+anthropic_api_key = ""
+openai_api_key    = ""
+
+# Default model
+default_model = "claude-sonnet-4-20250514"
+
+# Docker deployment (required when deploy_method = "docker")
+# ecr_image_uri = "123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/alexa-ai-lambda:latest"
+
+# Lambda configuration
+lambda_memory_size = 256
+lambda_timeout     = 30
